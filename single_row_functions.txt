@@ -1,0 +1,246 @@
+--SINGLE ROW FUNNCTIONS (SRF) & USING THE DUAL TABLE 
+
+--Function : predifined program that performs a task
+-- We create functions so we can call them instead of duplication the tasks over and over 
+--Sql has already many useful predifined functions so in this module we are only going to learn them 
+
+--Single row functions (SRF) act on one row at a time 
+
+--Function one : CONCAT(argument 1, argument 2)  > in order to reduce the duplication of pipes '||'
+
+-- Example of CONCAT() function
+SELECT CONCAT('My name is ', ename) AS "Worker Introduction"
+FROM emp;
+
+--UPPER() function capitalizes each character
+-- these are SRF so they apply the function on each row. Check out the example below to visualize this 
+
+--Example of UPPER()
+SELECT UPPER('i love sql') AS Confession
+FROM emp;
+
+---Dual table 
+-- We can use Dual tables to test our SRF
+
+--Example of using dual table 
+SELECT UPPER('i love sql') AS Confession
+FROM dual;
+
+-- Visualize Format of dual table 
+SELECT * 
+FROM dual
+--Experiment with dual table 
+SELECT 'pizza'
+FROM dual 
+
+SELECT 'pizza' AS FOOD, 'fanta' 
+FROM dual
+
+SELECT 'pizza' AS FOOD, 'fanta' as DRINK
+FROM dual
+
+SELECT CONCAT('Joey loves ','pizza') AS FOOD, CONCAT('with ','fanta') as DRINK
+FROM dual
+
+-- We can call functions within functions
+
+--Example of calling a function within a function
+
+
+SELECT CONCAT(LOWER(ename), UPPER(' is the MANAGER')) AS LEADERSHIP
+FROM emp
+WHERE job = 'MANAGER'
+
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+--USING FUNCTIONS IN WHERE AND CHARACTER BASED SRF's
+
+--you can utilize SRF's on WHERE clauses since WHERE clauses filter data by a column at a time
+
+--SRF's can be categorized by :
+------Char based
+------Num based 
+------Null based 
+
+--Example of using SRF's in WHERE clause 
+
+SELECT * 
+FROM emp
+WHERE job = UPPER('manager')
+
+--More functions that are useful:
+
+------more character based functions
+
+--Example of INITCAP() which capitilizes the first char of a word
+
+SELECT INITCAP('hello my name is joeyyy ') as SENTENCE
+FROM dual
+
+--Example LENGTH() function which returns number of characters in a string (including spaces)
+SELECT LENGTH('hello my name is joeyyy ') as LENGTH
+FROM dual
+
+SELECT  ename, LENGTH(ename) as length
+FROM emp
+WHERE LENGTH(ename) = 6
+
+-- Example of SUBSTR() function that extracts parts of a string   SUBSTR(string argument, beg estract point, num of char to estract or empty leads to end of str)
+SELECT 'hello', substr('hello',2,2)
+FROM dual
+
+SELECT 'hello', substr('hello',2)
+FROM dual
+
+-- Example of LPAD() function creates a pad to the left side of a value > LPAD(string that gets padding to the left, how much padding, padding value)
+
+SELECT LPAD('Joeyyy',LENGTH('Joeyyy')+3,'$') AS Padded 
+FROM dual
+--Note the difference
+SELECT LPAD('Joeyyy',3,'$')
+FROM dual
+
+---We have RPAD() function which does the same thing on the right
+
+
+--LTRIM() or RTRIM() trims or removes the first instance of a specified char based on the direction the function specifies 
+
+SELECT LTRIM('JOEYYYJ','J') AS TRIM
+FROM dual
+--vs
+SELECT RTRIM('JOEYYYJ','J') AS TRIM
+FROM dual
+
+---For more functions click 'tech on the net.com' and click on the 'ORACKE/PL SQL' navigation bar
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--NUMERIC AND DATE DATA TYPE SRF's
+
+--Numeric SRF's  accept numbers as arguments and perform mathematical operations 
+
+--ROUND() function  example ROUND(number arg, decimal place(if empty its rounding to whole number))
+SELECT ROUND(69.5589, 3)
+FROM dual
+--Another ROUND() function example
+SELECT ROUND(69.5589)
+FROM dual
+
+--TRUNC() function example . no second argument truncates to whole numbers
+SELECT TRUNC(69.5589,2)
+FROM dual
+
+---For more functions click 'tech on the net.com' and click on the 'ORACKE/PL SQL' navigation bar
+
+
+-- DATE TIME Functions
+
+--Sysdate has no brackets and arguments
+--It returns the current date in the format "mm-dd-yyyy"
+--Example of sysdate function
+SELECT SYSDATE 
+FROM dual
+
+--systimestamp function is similar in syntax to sysdate
+-- returns date and time in the format '28-NOV-22 09.34.29.891466 AM +00:00'
+SELECT SYSTIMESTAMP 
+FROM dual
+
+--ADD_MONTHS() function ADD_MONTHS('mm-dd-yyyy', num of months to be added)
+-- You can also use negative numbers to go back
+SELECT ADD_MONTHS('11/05/2000',6)
+FROM dual
+
+--past 3 months
+SELECT ADD_MONTHS(SYSDATE,-3)
+FROM dual
+
+--MONTHS_BETWEEN(dateA,dateB) it  does this > dateA-dateB
+SELECT MONTHS_BETWEEN('10/28/2022',SYSDATE)
+FROM dual
+--VS
+SELECT MONTHS_BETWEEN(SYSDATE,'10/28/2022')
+FROM dual
+--or
+SELECT MONTHS_BETWEEN('12/18/2022','10/28/2022')
+FROM dual
+
+--TRUN() function *SPECIAL* TRUNC(date, 'months')
+--this example eliminates the times 
+SELECT TRUNC(SYSTIMESTAMP)
+FROM dual
+--We can specify what part of the date we want from the second argument
+-- this example  returns the first of the  YEAR
+SELECT TRUNC(SYSDATE, 'YEAR')
+FROM dual
+--this example returns the first of the MONTH
+SELECT TRUNC(SYSDATE, 'MONTH')
+FROM dual
+
+-- Example using the trunc function in the WHERE clause 
+--Find who was hired in the year '1982'
+SELECT ename, hiredate, trunc(hiredate, 'MONTH')
+FROM emp
+WHERE trunc(hiredate, 'YEAR') = '01/01/1982'
+
+--------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------
+--CONVERSION SRF's AND DATE FORMATTING
+
+--TO TO_CHAR() function
+---TO CHAR(sysdate or number, 'formatting')
+--Purpose : to display date or number in a different format > switch months or display number as dollars 
+
+--Example of changing date format
+SELECT SYSDATE,  TO_CHAR(SYSDATE, 'mm-dd-yyyy')
+FROM dual
+--Example 2 of changing date format
+SELECT SYSDATE,  TO_CHAR(SYSDATE, 'ddth" of " month, yyyy')
+FROM dual
+
+--Example of changing numeric format
+SELECT ename, sal, TO_CHAR(sal,'$99,999.99') AS "SALARIES IN DOLLARS"
+FROM emp;
+
+--Converting a string into a date type
+--TO_DATE('str', 'format')
+
+SELECT TO_DATE('2009-09-21', 'yyyy-mm-dd')
+FROM dual
+
+-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------
+--CONCLUDING SRF's & NULL/ NULL IF FUNCTIONS 
+--Replacing data that is empty with something else
+
+--NVL() function replaces null value with something NVL(col name, set value)
+
+--Example of NVL() function
+SELECT ename, job, sal, NVL(comm,0)
+FROM emp
+WHERE empno in (7839,7698,7566,7654)
+
+--Example where we replace null value with no data found 
+--NVL function only accepts a number 
+--After we replace it with a number we use the 
+SELECT ename, job, sal, NVL(TO_CHAR(comm),'No data found')
+FROM emp
+WHERE empno in (7839,7698,7566,7654)
+
+-- NULLIF(arg1, arg2) > if arg 1 == arg 2 equals  NULL
+
+SELECT ename, length(ename), NULLIF(length(ename),5)
+FROM emp
+
+--Experimenting : if null print length is equal to 5
+SELECT ename, length(ename), NVL(TO_CHAR(NULLIF(length(ename),5)),'length is equal to 5'), sal
+FROM emp
+WHERE sal > 2000
+
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
