@@ -1,0 +1,111 @@
+--GROUP FUNCTIONS : MIN, MAX, AVG, COUNT ETC
+
+--Group functions are different  from SRF's
+-- in group functions,  the input > 10 rows the output is 1 row
+
+--FORMAT : 1) SELECT 2) FROM 3)WHERE 4)GROUP BY 5) HAVING 6) ORDER BY
+
+--Get the highest salary
+--Use the MAX() function
+SELECT MAX(sal) AS max_sal
+FROM emp
+
+--Get the lowest salary
+--Use the MIN() function
+SELECT MIN(sal) AS min_sal
+FROM emp
+
+--find total salaries given to employees
+--Use the SUM() functions
+SELECT SUM(sal) AS "TOTAL COMPENSATION TO EMPLOYEES"
+FROM emp
+
+--Find the highest amount we pay to our managers
+SELECT MAX(sal) AS "HIGHEST MANAGER PAY"
+FROM emp
+WHERE UPPER(job)  LIKE '%GER'
+
+--Find the average salaries of employees
+SELECT ROUND(AVG(sal),2)  AS "Average Salary of Employees"
+FROM emp
+-- Alternative to Find the average salaries of employees
+SELECT ROUND(SUM(sal) / COUNT(sal),2) AS "Computed AVG of sal", ROUND(AVG(sal),2) AS "Native AVG sal"
+FROM emp
+
+--Count the number of employees 
+SELECT COUNT(ename) as "Number of employees"
+FROM emp
+
+--Count the number of rows in our table
+SELECT COUNT(*) as "Number of employees"
+FROM emp
+
+--Count only counts non-null values . Look at example below
+SELECT COUNT(comm) as "Number of employees getting commission"
+FROM emp
+
+--Statistical Summary
+SELECT SUM(sal) AS sum, avg(sal) AS avg, max(sal) AS max , min(sal) AS min, count(sal) AS count
+FROM emp
+
+--Avg salary of SALESMAN
+SELECT AVG(SAL) AS "AVG salary of SALESMAN"
+FROM emp
+WHERE job = 'SALESMAN'
+
+----------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------
+--GROUP BY CLAUSE & HAVING CLAUSE 
+
+--If we wanted to find avg salary for each job title and we had a thousand Job titles
+--It would take forever to query this data > 1000 queries
+--Thats where GROUP BY clauses come in
+
+--Application of GROUP BY CLAUSE to find avg salary of each job title
+--Example of GROUP BY
+
+SELECT job,ROUND(AVG(sal),2) As "AVG Salary"
+FROM emp
+GROUP BY job
+
+--Find the number of employees for each job using GROUP BY
+SELECT job, COUNT(job) as "Number of employees"
+FROM emp
+GROUP BY job
+
+-- Find the least amt paid to each position
+SELECT job,MIN(sal) As "Minimum Salary"
+FROM emp
+GROUP BY job
+
+--Find the groups of jobs 
+SELECT job 
+FROM emp
+GROUP BY job
+
+--Find groups of jobs that only have two employees
+--No GROUP functions in WHERE clauses
+--THis is WHere the HAVING clause comes in
+SELECT job  
+FROM emp
+GROUP BY job
+HAVING COUNT(job) = 2
+
+-- Brain Teaser : Find departments with employees more than 3
+SELECT deptno
+FROM emp
+GROUP BY deptno
+HAVING count(deptno) > 3
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--MORE PRACTICE WITH GROUP BY CLAUSE
+
+--Example GROUP BY two col
+--How many jobs in a department number
+SELECT job, deptno, count(*)
+FROM emp
+GROUP BY job, deptno
