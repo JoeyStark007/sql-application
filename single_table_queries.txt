@@ -1,0 +1,436 @@
+--RETRIEVING DATA WITH THE SELECT CLAUSE
+
+--SELECT <column name> ...(* - returns all columns)
+--FROM <table>
+
+
+-- example of query - only asking the database for data
+
+SELECT job, ename
+from emp
+
+-- example of wild card > helps with understanding table before you query it : You know what values to expect after you run your query
+
+SELECT * 
+from emp
+
+-- example 2
+select dname, loc
+from dept
+--------------------------------------
+-- Note that when you select rows it brings all values even DUPLICATES !!!!
+-- IF you want to see distinct values of a column use the DISTINC keyword not all the records 
+
+--Example of Distinct keyword in action
+SELECT DISTINCT job
+FROM emp
+------------------------------------------------------------------
+-----------------------------------------------------------------
+---------------------------------------------------------------------
+
+--USING THE WHERE CLAUSE IN A QUERY
+
+--Used for further filtering of data 
+--Have to use single quotes for text condition which has to be exact
+
+--Example of WHERE clause  with text
+SELECT * 
+from emp
+where job = 'MANAGER'
+---Example of WHERE clause with numbers
+SELECT *
+FROM emp 
+WHERE sal = 5000
+
+--- You can use the AND clause to add multiple WHERE conditions
+SELECT *
+FROM emp
+WHERE job = 'SALESMAN' 
+AND  sal = 1600
+
+---Sometimes the and functions put too many conditions that no data is found
+-- You can debug yourself by running each WHERE statement step by step
+--Order matters as well : 1) SELECT 2) FROM 3) WHERE 4) AND 
+--- Syntax error vs logic error
+--example
+SELECT *
+FROM emp
+WHERE job = 'SALESMAN' 
+AND  sal = 1600
+AND comm = 300
+AND deptno = 30
+
+--90 % of SQL queries contain : SELECT, FROM , WHERE w/ AND
+
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+--USING OPERATORS IN WHERE clause 
+
+--You can use the NOT operator to specify a field in column you dont want to return as a row
+
+
+--Example of NOT operator
+SELECT *
+FROM emp
+WHERE job != 'SALESMAN'
+;
+
+---Example of logical error 
+SELECT *
+FROM emp
+WHERE job != 'SALESMAN'
+AND job = 'SALESMAN';
+
+--Example of comparison operator 
+--Self explanatory  greater than and less than
+SELECT *
+FROM emp
+WHERE job != 'SALESMAN'
+AND sal > 2500;
+
+---Example 2
+--Example of comparison operator 
+--Operators: > , < , >= , <=, = , !=
+
+--Self explanatory  greater than and less than operator which is not inclusive
+SELECT *
+FROM emp
+WHERE job != 'SALESMAN'
+AND sal > 2500
+AND sal < 3000;
+
+-- Can use greater than or less than operator with equal sign to be inclusive
+-- Example of inclusive greater than operator
+SELECT *
+FROM emp
+WHERE job != 'SALESMAN'
+AND sal >= 3000;
+
+-- can use operators not just on raw values but on columns as well
+
+-- example of operator used with value of column
+--superstar salesman
+SELECT *
+FROM emp
+WHERE comm > sal;
+
+--Brain tease example : combo of what we learned
+SELECT *
+FROM emp
+WHERE job != 'MANAGER'
+AND sal > 2500
+AND deptno = 20;
+---------------------------------------------------------
+---------------------------------------------------------
+---------------------------------------------------------
+--COMBINING WHERE, AND , OR WITH OPERATORS
+
+--AND clause has limits . what if we want to see rows with either or 2 (or more )conditions in one of their columns
+--Using the and clause leads to a logical error
+
+--Example of logical error when using AND for either or two conditions
+
+SELECT * 
+FROM emp
+WHERE job = 'CLERK'
+AND job = 'SALESMAN'
+
+--For this we have the OR clause
+--example of OR operator
+SELECT * 
+FROM emp
+WHERE job = 'CLERK'
+OR job = 'SALESMAN'
+
+-- Brain teaser problem : combo of what I learned
+-- return names of emp who is not manager nor salesman and have salary greater or equal to 2000
+
+--step 1 use asterisk to see data
+SELECT *
+FROM emp
+WHERE job != 'MANAGER'
+AND job != 'SALESMAN'
+AND sal >= 2000
+-- Once confirmed correct specify the column we want 
+SELECT ENAME
+FROM emp
+WHERE job != 'MANAGER'
+AND job != 'SALESMAN'
+AND sal >= 2000
+
+-- Brain teaser : query that returns names and hire dates of emps that work for Dallas or Chicago
+
+--Step 1 > look at the tables to figure out the info we need 
+SELECT *
+FROM emp
+
+SELECT * 
+FROM dept
+
+--Step 2 : Notice DEPTNO is in both tables 
+-- FOR the location Dallas >deptno = 20 and FOR Chicago > deptno = 30
+
+--Now we can use our WHERE statement and Operators as well
+
+--Step 3: use our WHERE clause to write the query that answers our question with all data just to confirm accuracy
+
+SELECT *
+FROM emp
+WHERE deptno = 20
+OR deptno = 30;
+
+--Step 4: Specify the column names to answer our question
+SELECT ename, hiredate
+FROM emp
+WHERE deptno = 20
+OR deptno = 30;
+
+-----------------------------------------------------------
+-----------------------------------------------------------
+-----------------------------------------------------------
+--QUERY FIILTERING CONTINUED : BETWEEN, IN, AND, NULL
+
+--We can use IN operator to avoid using multiple OR operators 
+
+--Example of IN Operator : query that returns names and hire dates of emps that work for Dallas or Chicago
+SELECT ename,hiredate
+FROM emp
+WHERE deptno IN (20,30)
+
+-- OR operator example that doesnt use IN operator 
+SELECT ename, hiredate
+FROM emp
+WHERE ename = 'SMITH'
+OR ename = 'ALLEN'
+OR ename = 'WARD'
+OR ename = 'MARTIN'
+
+--Versus using  IN operator : reduces reduncancy and makes query more SUCCINT
+
+SELECT ename, hiredate
+FROM emp
+WHERE ename IN ('SMITH','ALLEN','WARD','MARTIN')
+
+-- You can also use NOT IN operator to query data 
+
+--Example of using NOT IN operator
+
+SELECT ename, hiredate
+FROM emp
+WHERE ename NOT IN ('SMITH','ALLEN','WARD','MARTIN')
+
+--Using the BETWEEN operator 
+--Use to get data based on a given range (value a, value b) Inclusive
+
+--Example of using BETWEEN operator with dates 
+SELECT *
+FROM emp
+WHERE hiredate BETWEEN '05/01/1981' AND '12/09/1982'
+--Example of using BETWEEN operator with numbers
+SELECT *
+FROM emp
+WHERE sal BETWEEN 2500 AND 2999
+
+--Identifying empty cells using NULL clause represented by null or '-'.  0 is not null
+--Example of identifying null fields
+SELECT * 
+FROM emp
+WHERE comm IS NULL;
+--Example of excluding null fields 
+SELECT * 
+FROM emp
+WHERE comm IS NOT NULL;
+
+--brain teasor : Write a query that returns those employees that dont make commision and have sal > 1100 but less than 5000. Exclude emp
+-- that have a sal = 3000
+
+--Step one : query the whole table to understand
+SELECT * 
+FROM emp
+-- Step two : Add WHERE clause and operators. Test the operators/filters layer by layer to make sure 
+--They are applied properly 
+SELECT * 
+FROM emp
+WHERE comm IS NULL
+AND sal !=  3000
+AND sal > 1100 
+AND sal < 5000
+OR comm = 0
+
+--Common logical error 
+--Using BETWEEN operator when its not inclusive 
+-- Using the AND operator instead of the OR operator on a column
+SELECT * 
+FROM emp
+WHERE comm IS NULL
+AND comm = 0
+AND sal !=  3000
+AND sal BETWEEN  1100  AND  5000
+
+
+--------------------------------------------------------
+--------------------------------------------------------
+--------------------------------------------------------
+--QUERY FILTERING CONDITIONS & OPERATOR PRECEDENCE 
+
+-- Cant put OR operator between AND operators 
+--Ruins the logical flow
+--Leads to logical error. 
+-- Example : Write a query that returns those employees that dont make commision and have sal > 1100 but less than 5000. Exclude emp
+-- that have a sal = 1500.
+SELECT * 
+FROM emp
+WHERE comm IS NULL
+AND sal !=  1500
+AND sal > 1100 
+OR comm = 0
+AND sal < 5000
+
+--Another logical error
+
+SELECT * 
+FROM emp
+WHERE (comm IS NULL
+AND sal !=  3000
+AND sal > 1100 
+AND sal < 5000)
+
+OR comm = 0
+
+--Correct logical flow 
+--You can use brackets to better understand and wrap up  or & and conditions into one condition
+SELECT *
+FROM emp
+WHERE (comm is null OR comm = 0)
+AND sal > 1100
+AND sal < 5000
+AND sal != 1500
+
+-- Another Brain teaser : Return those emp that are sales men AND 'either' make 300 in commission OR > 1000 dollars in commission
+
+SELECT *
+FROM emp
+WHERE job = 'SALESMAN'
+AND (comm = 300 OR  comm > 1000)
+
+--LIKE clause 
+--Used to help developers to get similar data which helps them to not have to specify exactly a field of a column
+--% means wildcard and matches any character after the char before it are correct
+
+--Example of use of LIKE clause  to find jobs with value = 'SALESMAN'
+SELECT *
+FROM emp
+WHERE job LIKE 'SALES%'
+--Example of use of LIKE clause  to find jobs with value = 'CLERK'
+SELECT *
+FROM emp
+WHERE job LIKE 'C%'
+--Example of use of LIKE clause  to find jobs with value = 'MANAGER'
+-- Note the % char is before the ending
+SELECT *
+FROM emp
+WHERE job LIKE '%GER'
+
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+-- ORDERING CONCATENATING AND ALIASING QUERY RESULTS 
+
+-- Objective :
+--Displaying meaningful names other than the ones in default 
+-- Display results of a Query in a more customized format using concatenation
+--Ordering the data based on certain attributes 
+--For business use e.g reporting to manager
+
+
+-- use alias by typing prefered alias after writing the column name
+--Aliase names cant have spaces unless you use quotations. Use double Quotations
+--Good practice to use the AS clause : it improves readability
+
+--Example of using alias but as a compound name
+SELECT ename EMPLOYEE_NAME, sal SALARY, comm COMISSION
+FROM emp
+--Example of using alias but with spaces
+SELECT ename "EMPLOYEE NAME", sal INCOME, comm COMISSION
+FROM emp
+--Example of using alias but with spaces and with AS clause
+SELECT ename AS "EMPLOYEE NAME", sal AS INCOME, comm AS COMISSION
+FROM emp
+
+-- Using concatenation to  combine attributes in order to write reports 
+-- WE can use the pipeline char '||' to concatenate
+-- For example we want a report that writes :
+--<col name = Employee Salaries>
+-- King makes $5000 per month 
+--Blake makes $2850 per month 
+--Clark makes $2450 per month
+--... 
+SELECT ename  || ' Makes $' || sal || ' per month.' AS "Employee Salaries"
+FROM emp
+
+--Example of another concatenation 
+SELECT 'Hello! My name is ' || ename  AS "Manager Introductions"
+FROM emp 
+WHERE job LIKE '%GER'
+
+
+--ORDER BY 
+--Used to sort data by a particular column/ attribute 
+-- For char it orders alphabetically from A-
+--For numbers it orders in ascending order from lowest value
+--You can also sort by multiple columns
+
+--Example of ORDER BY clause on character column with A at top and Z at bottom
+SELECT *
+FROM emp
+ORDER BY ename;
+
+--Example of ORDER BY clause on numeric column in ascending order with lowest val at the top and highest val at the bottom
+SELECT *
+FROM emp
+ORDER BY sal;
+
+--Example of ORDER BY clause on numeric column in descending order with highest val at the top and lowest val at the bottom
+SELECT *
+FROM emp
+ORDER BY sal DESC;
+
+--Example of ORDER BY clause with multiple columns/attributes
+-- sorts in order of the column/ attribute it recieves first 
+--In this example it sorts first by 'deptno' then out of that sorted list it sorts it again by 'sal'
+SELECT deptno, sal, ename
+FROM emp
+ORDER BY deptno,sal
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
