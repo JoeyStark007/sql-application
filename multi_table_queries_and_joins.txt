@@ -1,0 +1,298 @@
+-- SELECT WITHIN SELECT (SUBQUERIES)
+--Gives Flexibility
+--You can relate multiple tables with this
+
+SELECT *
+FROM dept
+WHERE deptno = 30
+
+--Is the same as 
+
+SELECT * from dept
+WHERE deptno = (SELECT deptno FROM dept WHERE deptno = 30)
+
+--Nested Queries Get run first
+--Can be used as WHERE condition if it returns on field
+SELECT * 
+FROM dept
+WHERE deptno  < (SELECT deptno FROM dept WHERE deptno = 30)
+AND dname = 'ACCOUNTING'
+
+--Can be used as a table if it returns multiple columns
+SELECT * 
+FROM (SELECT * FROM dept)
+
+--Interaction between two tables 
+--Give me the emp columns of employees who work in Chicago
+SELECT * 
+FROM emp
+WHERE deptno = (SELECT deptno FROM dept WHERE loc = 'CHICAGO')
+
+--You can also put SELECT QUERIES in SELECT CLAUSE
+
+
+-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------
+
+--RELATING TABLES USING JOINS ''
+
+
+
+-- A > connecting two tables using subqueries
+SELECT * 
+FROM emp
+WHERE deptno = (SELECT deptno FROM dept WHERE loc = 'CHICAGO')
+
+--B > Relating two tables using joins
+
+SELECT * 
+FROM emp
+
+SELECT * 
+FROM dept
+
+-- deptno col in common
+SELECT * 
+FROM emp, dept
+WHERE emp.deptno = dept.deptno
+
+--Only pulls rows in common with that col
+
+--Show emp that only work in DALLAS show only : name , title, salary
+SELECT emp.ename, emp.job,emp.sal 
+FROM emp, dept
+WHERE emp.deptno = dept.deptno
+AND dept.loc = 'DALLAS'
+
+--here we specify from which tables we SELECT to avoid abiguity but if it exists in one table then its not necessary
+
+--WE can give alias to columns but also tables as well
+SELECT e.ename, e.job,e.sal 
+FROM emp e, dept d
+WHERE e.deptno = d.deptno
+AND d.loc = 'DALLAS'
+
+--Same as 
+SELECT e.ename, e.job,e.sal 
+FROM (SELECT * FROM emp) e, (SELECT * FROM dept) d
+WHERE e.deptno = d.deptno
+AND d.loc = 'DALLAS'
+
+--Subqueries allow further filtering
+SELECT e.ename AS "FIRST NAME", e.job,e.sal , e.deptno
+FROM (SELECT * FROM emp WHERE job in ('MANAGER','CLERK')) e, (SELECT * FROM dept WHERE loc = 'DALLAS') d
+WHERE e.deptno = d.deptno
+
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+
+--JOINS CONTINUED INNER & OUTER JOINS
+
+--INNER : Matches only rows for which the tables have the same value for the common column
+--RIGHT : Table on the right maintains its unique rows in the  common columns and gets matching rows for the common column in the other(left) table.
+----gets null values for attributes not common with RIGHT table
+--LEFT : Same principle in RIGHT JOIN just reverse tables
+--OUTER : LEFT JOIN OR RIGHT JOIN
+
+---FULL OUTER : All data is Combined. We get null on both sides
+
+--Example of INNER JOIN
+SELECT *
+FROM emp, dept
+WHERE emp.deptno = dept.deptno
+
+------Better syntax of INNER JOIN
+SELECT *
+FROM emp INNER JOIN dept
+ON emp.deptno = dept.deptno
+
+---Example of RIGHT JOIN
+SELECT *
+FROM emp RIGHT JOIN dept
+ON emp.deptno = dept.deptno
+---Example of LEFT JOIN
+SELECT *
+FROM emp LEFT JOIN dept
+ON emp.deptno = dept.deptno
+--Another Syntax of using  RIGHT OUTER JOIN not recommended
+SELECT *
+FROM emp, dept
+WHERE emp.deptno(+) = dept.deptno
+--Another Syntax of using  LEFT OUTER JOIN not recommended
+SELECT *
+FROM emp, dept
+WHERE emp.deptno = dept.deptno(+)
+----FULL OUTER JOIN EXAMPLE
+SELECT *
+FROM emp FULL OUTER JOIN dept
+ON emp.deptno = dept.deptno
+--Can do subqueries with FULL OUTER JOIN as well.
+SELECT *
+FROM (SELECT  * FROM emp WHERE job = 'SALESMAN') e FULL OUTER JOIN (SELECT * FROM dept) d
+ON e.deptno = d.deptno
+
+--Brain teaser : bring the same results above with LEFT OUTER JOIN
+SELECT empno, ename, job, mgr, hiredate, sal, comm, e.deptno as deptno, d.deptno as deptno, dname, loc
+from (select * from dept) d LEFT OUTER JOIN (select * from emp where job = 'SALESMAN') e
+ON e.deptno = d.deptno
+
+
+SELECT e.*, d.*
+from (select * from dept) d LEFT OUTER JOIN (select * from emp where job = 'SALESMAN') e
+ON e.deptno = d.deptno -- Further Simplified Version
+
+
+SELECT * 
+from emp
+WHERE EXISTS (select 'random' from dual)
+
+
+SELECT * 
+from emp
+WHERE NOT EXISTS (select 'random' from dual)
+
+
+SELECT * 
+from emp
+WHERE EXISTS (select null from dual)
+
+
+SELECT * 
+from emp
+WHERE NOT EXISTS (select * from emp where job = 'PROGRAMMER')
+
+
+SELECT d.*
+FROM dept d
+WHERE EXISTS (SELECT * FROM emp WHERE d.deptno = emp.deptno)
+
+
+SELECT d.*
+FROM dept d
+WHERE NOT EXISTS (SELECT * FROM emp WHERE d.deptno = emp.deptno)
+AND LOC = 'CHICAGO' -- no data found
+
+
+SELECT d.*
+FROM dept d
+WHERE NOT EXISTS (SELECT * FROM emp WHERE d.deptno = emp.deptno)
+AND LOC = 'BOSTON' -- no data found
+
+
+SELECT d.*
+FROM dept d
+WHERE NOT EXISTS (SELECT * FROM emp WHERE d.deptno = emp.deptno)
+OR LOC = 'CHICAGO'
+
+-----------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
+--SELF JOIN 
+--Find the name of the manager and their employees
+--Notice the same table the emp.no is aligned with the manager.no
+SELECT e.ename AS employee, m.ename AS manager
+FROM emp e, emp m
+WHERE e.mgr = m.empno
+
+--But King is an employee without a manager (President)
+--How do we include him in our table
+SELECT e.ename AS employee, m.ename AS manager
+FROM emp e LEFT JOIN emp m
+ON e.mgr = m.empno
+
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+--CROSS JOIN, NATURAL JOIN AND THE USING CLAUSE
+
+--CROSS JOIN
+--KNOWN AS A CARTESIAN PLOT 
+-- COMBINES COLUMNS FOR EVERY POSSIBLE COMBINATION
+
+--Ex of CROSS JOIN
+SELECT * 
+FROM emp CROSS JOIN dept
+
+-- NATURAL JOIN
+--Happens naturally if there is one foreign key that relates the tables and col are not ambiguious
+--Shortcut to inner join
+
+--Example of INNER JOIN
+
+SELECT ename, mgr, loc
+FROM emp NATURAL JOIN dept
+
+--USING CLAUSE 
+--SHortcut to joining tables using a specific column
+--USING(col from table a, col from table b) or (if name is the same <col name>)
+
+SELECT ename, mgr, loc
+FROM emp JOIN dept USING(deptno)
+
+SELECT ename, mgr, loc
+FROM emp RIGHT JOIN dept USING(deptno)
+
+----------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------
+--EQUIJOIN AND NON-EQUIJOINS
+
+SELECT * FROM emp, dept
+WHERE dept.deptno = emp.deptno
+
+-- INNER JOIN IS THE SAME AS EQUI JOIN because of equal sign
+
+--NON-EQUIJOINS 
+--CREATE TABLE job_grade
+--   (Grade_level varchar(2) not null,
+ --   lowest_sal number not null,
+--    highest_sal number not null);
+
+--INSERT ALL
+--    INTO job_grade
+ --   VALUES ('A', 0, 1000)
+--    INTO job_grade
+ --   VALUES ('B', 1001, 2000)
+ --   INTO job_grade
+ --   VALUES ('C', 2001, 3000)
+--    INTO job_grade
+--    VALUES ('D', 3001, 4000)
+--    INTO job_grade
+--    VALUES ('E', 4001, 5000)
+
+--Example of NON-EQUIJOINS
+
+--SELECT e.ename, e.sal, j.grade_level
+--FROM emp e JOIN job_grade j
+--ON e.sal BETWEEN j.lowest_sal AND j.highest_sal
+
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+
+--CASE STATEMENTS
+
+--  SYNTAX :
+--  CASE [ expression]
+--  WHEN condition_1 THEN result_1 
+--  WHEN condition_2 THEN result_2
+--  ...
+--  ELSE result
+-- END
+
+SELECT ename, job 
+(CASE job 
+WHEN 'PRESIDENT' THEN 'Boss'
+WHEN 'MANAGER' THEN 'Decides schedule'
+WHEN 'ANALYST' THEN 'Good at Math'
+ELSE 'No comment'
+END) as "COMMEN"
+FROM emp;
+
+SELECT ename, sal, CASE
+    WHEN sal >= 3000 THEN 'Rich man'
+    ELSE 'No comment'
+    END AS salary_comment
+FROM emp;
