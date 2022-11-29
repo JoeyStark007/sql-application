@@ -1,0 +1,139 @@
+create table bricks (
+  brick_id integer,
+  colour   varchar2(10),
+  shape    varchar2(10),
+  weight   integer
+);
+
+insert into bricks values ( 1, 'blue', 'cube', 1 );
+insert into bricks values ( 2, 'blue', 'pyramid', 2 );
+insert into bricks values ( 3, 'red', 'cube', 1 );
+insert into bricks values ( 4, 'red', 'cube', 2 );
+insert into bricks values ( 5, 'red', 'pyramid', 3 );
+insert into bricks values ( 6, 'green', 'pyramid', 1 );
+
+commit;
+
+--Create new col with total bricks by colour
+
+SELECT b.*,
+(SELECT COUNT(*) FROM bricks where colour = b.colour) AS total_bricks_by colour
+FROM bricks b;
+
+--weight by color
+SELECT b.*, (SELECT sum(weight) FROM bricks WHERE colour = b.colour ) AS total_weight_by_color
+FROM bricks b
+
+--OVER() function
+SELECT b.*, (SELECT sum(weight) FROM bricks WHERE colour = b.colour ) AS total_weight_by_color
+FROM bricks b
+
+SELECT b.*, (SELECT sum(weight) FROM bricks WHERE colour = b.colour ) AS total_weight_by_color
+FROM bricks b
+
+SELECT b.*, (SELECT sum(weight) FROM bricks WHERE colour = b.colour ) AS total_weight_by_color
+FROM bricks b
+
+SELECT b.*, 
+SUM(weight) OVER(PARTITION BY shape) AS total_weight_shape
+FROM bricks b
+
+------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+--COMPUTE RUNNING TOTALS WITH ORDERING AND PARTITIONING
+
+SELECT b.*, 
+SUM(weight) OVER(PARTITION BY shape) AS total_weight_shape,
+SUM(weight) OVER(PARTITION BY colour) AS total_weight_by_color,
+MAX(weight) OVER(PARTITION BY shape) AS total_weight_shape,
+MAX(weight) OVER(PARTITION BY colour) AS total_weight_by_color
+
+
+FROM bricks b
+
+SELECT b.*, 
+SUM(weight) OVER(PARTITION BY shape) AS total_weight_shape,
+SUM(weight) OVER(PARTITION BY colour) AS total_weight_by_color,
+MAX(weight) OVER(PARTITION BY shape) AS total_weight_shape,
+MAX(weight) OVER(PARTITION BY colour) AS total_weight_by_color
+
+
+FROM bricks b
+
+------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+
+--UNBOUNDED PRECEDING ORDER IN OVER CLAUSE
+
+select b.*, 
+       sum(weight) over (
+         order by brick_id
+       ) running_weight
+       
+from   bricks b
+order by brick_id;
+
+--Windowing clause
+
+------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+--SLICING WINDOWS AND FILTERING WITH ANALYTIC FUNCTIONS
+
+---If last ORDER by is not unique we have a problem
+select b.*, 
+       sum(weight) over (
+         order by weight
+       ) running_weight
+       
+from   bricks b
+order by weight;
+
+--Solution
+select b.*, 
+       sum(weight) over (
+         order by weight range between unbounded preceding 
+      and current row
+       ) running_weight
+       
+from   bricks b
+order by weight;
+
+--Slicing
+select b.*, 
+       sum(weight) over (
+         order by weight rows between 1 preceding
+      and current row
+       ) running_weight
+       
+from   bricks b
+order by weight;
+
+--Filtering by Analytic Functions
+select * from (
+  select b.*,
+         count(*) over ( partition by colour ) colour_count
+  from   bricks b
+)
+where  colour_count >= 2;
+
+------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+--RANK, DENSE_RANK, LEAD, & LAG FUNCTIONS
+
+select brick_id, weight, 
+       row_number() over ( order by weight ) rn, 
+       rank() over ( order by weight ) rk, 
+       dense_rank() over ( order by weight ) dr
+from   bricks;
+
+select b.*,
+       lag ( shape ) over ( order by brick_id ) prev_shape,
+       lead ( shape ) over ( order by brick_id ) next_shape
+from   bricks b;
+
+--Source : https://livesql.oracle.com/apex/f?p=590:1:2209449720292:CLEAR:NO:1:TUTORIAL_ID,P1_SHOW_LEARN_SIDEBAR:143127379594936522093884822782011566106,Y
+
